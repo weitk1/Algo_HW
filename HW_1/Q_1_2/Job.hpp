@@ -1,3 +1,6 @@
+#ifndef __ALGO_HW1_JOB_HPP__
+#define __ALGO_HW1_JOB_HPP__
+
 #include <functional>
 
 struct Job
@@ -58,3 +61,4 @@ struct LessWeightLenRatio : public std::binary_function<Job, Job, bool> {
     }
 };
 
+#endif // __ALGO_HW1_JOB_HPP__
