@@ -33,9 +33,7 @@ struct Job
 struct LessWeightLenDiff : public std::binary_function<Job, Job, bool> {
     bool operator()(const Job &j1, const Job &j2) {
         if ((j1.weight - j1.len) == (j2.weight - j2.len)) {
-            if (j1.weight == j2.weight) {
-                return (j1.len < j2.len);
-            }
+            return (j1.weight < j2.weight);
         } else {
             return ((j1.weight - j1.len) < (j2.weight - j2.len));
         }
