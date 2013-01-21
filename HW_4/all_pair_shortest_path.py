@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+from heapq import heappush, heappop
 from pprint import pprint
 
 # Bellman-Ford
@@ -30,7 +31,7 @@ def bellman_ford(edges, source):
             assert (distance[v] <= distance[u] + edges[u][v]), "Negative Cycle"
     return distance
 
-# Johnson's
+# Utility function for Johnson's algorithm
 def reweight_edges(edges, distance):
     for u in edges.keys():
         for v in edges[u]:
@@ -41,6 +42,32 @@ def restore_edge_weight(positive_edge_weight, u, v, distance):
     orig_edge_weight = positive_edge_weight - distance[u] + distance[v]
     return orig_edge_weight
      
+
+# Dijkstra
+def dijkstra(positive_edges, source):
+    unvisited_vertices = []
+    heap = []
+    distance = {} # final distances
+    
+    for u in positive_edges.keys():
+        if u == source:
+            distance[source] = 0
+            for v in positive_edges[source]:
+                heappush(heap, (positive_edges[source][v], u, v))
+        else:   
+            distance[u] = sys.maxint
+            unvisited_vertices.append(u)
+            
+    
+    while (len(unvisited_vertices) > 0):
+        try:
+            (u_v_len, u, v) = heappop(heap)
+        except IndexError:
+            # Some vertices are unreachable
+            break
+        
+    return distance
+    
 if __name__ == '__main__':
     graph_file = sys.argv[1] 
 
@@ -64,8 +91,6 @@ if __name__ == '__main__':
 
             edges[p1][p2] = weight
 
-#    pprint(edges)
-
     try:
         distance = bellman_ford(edges, 1)
     except AssertionError:
@@ -76,21 +101,15 @@ if __name__ == '__main__':
     for v in range(1, num_vertices + 1):
         edges[0][v] = 0
 
-#    pprint(edges)
-
     orig_distance = bellman_ford(edges, 0)
-#    pprint(orig_distance)
 
     # Re-weight each edge to make all edges positive
     positive_edges = reweight_edges(edges, orig_distance)
     del positive_edges[0]
 
     print "After reweight"
-#    pprint(positive_edges)
 
     # Run Dijkstra for each vertex against new graph and find all pair shortest path
-    # TODO: use itertools.namedtuple
-    # TODO: use Dijkstra
     shortest_path_len = sys.maxint
     shortest_path_u = 0
     shortest_path_v = 0
@@ -100,14 +119,17 @@ if __name__ == '__main__':
 
     for u in positive_edges.keys():
         print "%d/%d" % (count, total)
-        distance = bellman_ford(positive_edges, u)
-#        pprint(distance)
+
+#        print "Bellman-Ford"
+#        distance = bellman_ford(positive_edges, u)
+
+#        print "Dijkstra"
+        distance = dijkstra(positive_edges, u)
         
         for v in distance.keys():
             if (u == v):
                 continue
             new_shortest_path_len = distance[v] - orig_distance[u] + orig_distance[v]
-#            print "=== (%d, %d, %d, %d, %d, %d, %d)" % (u, v, distance[v], orig_distance[u], orig_distance[v], new_shortest_path_len, shortest_path_len)
             if new_shortest_path_len < shortest_path_len:
                 shortest_path_len = new_shortest_path_len
                 shortest_path_u = u
